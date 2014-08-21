@@ -1,0 +1,55 @@
+require "launchy"
+
+class ShortenerInterface
+  attr_accessor :email, :long_url, :shortened_url, :user
+  
+  def initialize
+  end
+  
+  def prompt
+    puts "Give me your email:"
+    @email = gets.chomp
+    set_user
+    puts "What do you want to do?"
+    puts "0. create shortened URL"
+    puts "1. visit shortened URL"
+    choice = gets.chomp.to_i
+    if choice == 0
+      url_prompt
+    elsif choice == 1
+      visit_url
+    end
+  end
+  
+  def set_user
+    if User.exists?(['email = ?', @email]) 
+      @user = User.where(email: @email)
+    else
+      @user = User.new(email: @email)
+    end
+  end
+  
+  def url_prompt
+    puts "Type in your loooooooong URL"
+    @long_url = gets.chomp
+    puts "Short url is: #{short_url}"
+  end
+  
+  def short_url
+    ShortenedUrl.create_for_user_and_long_url!(@user, @long_url).short_url
+  end
+  
+  def visit_url
+    puts "Type in the shortened URL"
+    @shortened_url = gets.chomp
+    short_url = ShortenedUrl.where(short_url: @shortened_url).first
+    Launchy.open("#{short_url.long_url}") 
+    Visit.record_visit!(@user, short_url)
+  end
+  
+end
+
+if $PROGRAM_NAME == __FILE__
+  prompt = ShortenerInterface.new
+  prompt.prompt
+end

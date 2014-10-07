@@ -45,7 +45,6 @@ class ShortenedUrl < ActiveRecord::Base
     self.visits.select(:visitor_id).count
   end
   
-  #we use distinct in the association
   def num_uniques
     self.url_visitors.select(:visitor_id).count
   end
